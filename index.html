@@ -20,7 +20,6 @@
     }
     header nav a:hover { color: #2e7d32; }
     .hero {
-      text-align: center;
       padding: 4rem 2rem;
       background: linear-gradient(to right, #e8f5e9, #f1f8e9);
       color: #2e7d32;
@@ -102,9 +101,29 @@
       background-color: #f0f0f0;
       color: #2e7d32;
     }
+    .banner {
+      width: 100%;
+      height: 500px;
+      background: url('sundown.jpg') center/cover no-repeat;
+      background-attachment: fixed;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .banner {
+        background-attachment: scroll;
+        background-position: center center;
+      }
+    }
   </style>
 </head>
 <body>
+  
   <header>
     <div><img src="white-01.png" alt="317 Capital Group logo" style="height: 50px;" /></div>
     <nav>
@@ -122,8 +141,11 @@
     </nav>
   </header>
   <section class="hero">
-    <h1>317 Capital Group</h1>
-    <p>Boutique Real Estate Debt & Equity solutions specializing in development, bridge loans, and private equity investments</p>
+    <div class="banner">
+      <h1 style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">317 Capital Group</h1>
+      <p style="color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.6);">Boutique Real Estate Debt & Equity solutions specializing in development, bridge loans, and private equity investments</p>
+    </div>
+
   </section>
   <section id="who" class="section">
     <h2>Who We Are</h2>
