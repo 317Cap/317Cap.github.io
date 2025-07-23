@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Budget Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .dropzone {
+            border: 2px dashed #9ca3af;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .dropzone:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        .dropzone.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .budget-card {
+            transition: all 0.2s ease;
+        }
+        .budget-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .category-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .transaction-row:hover {
+            background-color: #f9fafb;
+        }
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: absolute;
+                z-index: 50;
+                height: 100vh;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="sidebar bg-white w-64 border-r border-gray-200 flex-shrink-0">
+            <div class="p-4 border-b border-gray-200">
+                <h1 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-hard-hat mr-2 text-blue-500"></i>
+                    BuildTrack Pro
+                </h1>
+            </div>
+            <nav class="p-4">
+                <ul>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 text-blue-600 rounded-lg bg-blue-50">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-file-upload mr-3"></i>
+                            Upload Data
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-list-alt mr-3"></i>
+                            Transactions
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-chart-pie mr-3"></i>
+                            Budget Analysis
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-cog mr-3"></i>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                        JD
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-800">John Doe</p>
+                        <p class="text-xs text-gray-500">Project Manager</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Mobile Header -->
+            <div class="md:hidden bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+                <button id="sidebarToggle" class="text-gray-500">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <h1 class="text-lg font-bold text-gray-800">BuildTrack Pro</h1>
+                <div class="w-8"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Construction Budget Dashboard</h2>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-plus mr-2"></i> New Project
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow-sm budget-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">Total Budget</p>
+                                <h3 class="text-2xl font-bold text-gray-800">$1,250,000</h3>
+                            </div>
+                            <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Spent</span>
+                                <span class="font-medium">$875,000</span>
+                            </div>
+                            <div class="progress-bar mt-1">
+                                <div class="progress-bar-fill bg-blue-500" style="width: 70%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow-sm budget-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">Remaining Budget</p>
+                                <h3 class="text-2xl font-bold text-green-600">$375,000</h3>
+                            </div>
+                            <div class="p-2 rounded-full bg-green-100 text-green-600">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Percentage</span>
+                                <span class="font-medium">30%</span>
+                            </div>
+                            <div class="progress-bar mt-1">
+                                <div class="progress-bar-fill bg-green-500" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow-sm budget-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">Over Budget Categories</p>
+                                <h3 class="text-2xl font-bold text-red-600">3</h3>
+                            </div>
+                            <div class="p-2 rounded-full bg-red-100 text-red-600">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Last Month</span>
+                                <span class="font-medium">2</span>
+                            </div>
+                            <div class="progress-bar mt-1">
+                                <div class="progress-bar-fill bg-red-500" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-lg shadow-sm budget-card">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">Transactions</p>
+                                <h3 class="text-2xl font-bold text-gray-800">247</h3>
+                            </div>
+                            <div class="p-2 rounded-full bg-purple-100 text-purple-600">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">This Month</span>
+                                <span class="font-medium">42</span>
+                            </div>
+                            <div class="progress-bar mt-1">
+                                <div class="progress-bar-fill bg-purple-500" style="width: 17%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Overview Chart -->
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Budget vs Actual Spending</h3>
+                        <div class="flex space-x-2">
+                            <select class="bg-gray-100 border border-gray-300 text-gray-700 py-1 px-3 rounded-lg text-sm">
+                                <option>This Year</option>
+                                <option>Last Year</option>
+                                <option>All Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Data Upload Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Upload Transactions -->
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-file-import mr-2 text-blue-500"></i>
+                            Upload Transactions
+                        </h3>
+                        <div id="transactionDropzone" class="dropzone">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-file-csv text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600 font-medium">Drag & drop your CSV file here</p>
+                                <p class="text-gray-500 text-sm mt-1">or click to browse files</p>
+                                <input type="file" id="transactionFile" class="hidden" accept=".csv">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button id="processTransactions" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg w-full">
+                                Process Transactions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Budget -->
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-file-upload mr-2 text-green-500"></i>
+                            Upload Budget
+                        </h3>
+                        <div id="budgetDropzone" class="dropzone">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-file-excel text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600 font-medium">Drag & drop your budget file here</p>
+                                <p class="text-gray-500 text-sm mt-1">Excel or CSV format</p>
+                                <input type="file" id="budgetFile" class="hidden" accept=".csv,.xlsx,.xls">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button id="processBudget" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
+                                Process Budget
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Categories -->
+                <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Budget Categories</h3>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Search categories..." class="bg-gray-100 border border-gray-300 text-gray-700 py-1 px-3 rounded-lg text-sm">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm">
+                                <i class="fas fa-plus mr-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Spent</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% Spent</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                                <i class="fas fa-tools"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Site Preparation</div>
+                                                <div class="text-sm text-gray-500">Earthworks, Clearing</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$85,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$92,500</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">-$7,500</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-16 mr-2">
+                                                <div class="progress-bar">
+                                                    <div class="progress-bar-fill bg-red-500" style="width: 109%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-red-600">109%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Over Budget</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                                <i class="fas fa-home"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Foundation</div>
+                                                <div class="text-sm text-gray-500">Concrete, Footings</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$120,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$115,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">$5,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-16 mr-2">
+                                                <div class="progress-bar">
+                                                    <div class="progress-bar-fill bg-green-500" style="width: 96%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-green-600">96%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">On Track</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                                                <i class="fas fa-bolt"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Electrical</div>
+                                                <div class="text-sm text-gray-500">Wiring, Fixtures</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$75,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$68,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">$7,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-16 mr-2">
+                                                <div class="progress-bar">
+                                                    <div class="progress-bar-fill bg-yellow-500" style="width: 91%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-yellow-600">91%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">On Track</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                                                <i class="fas fa-tint"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Plumbing</div>
+                                                <div class="text-sm text-gray-500">Pipes, Fixtures</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$65,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$72,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">-$7,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-16 mr-2">
+                                                <div class="progress-bar">
+                                                    <div class="progress-bar-fill bg-red-500" style="width: 111%"></div>
+                                                </div>
+                                            </div>
+                                            <span class="text-sm text-red-600">111%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Over Budget</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Search transactions..." class="bg-gray-100 border border-gray-300 text-gray-700 py-1 px-3 rounded-lg text-sm">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm">
+                                <i class="fas fa-filter mr-1"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget Item</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="transaction-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">06/15/2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">ABC Concrete</div>
+                                        <div class="text-sm text-gray-500">Invoice #CON-2345</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$12,500.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="category-chip bg-blue-100 text-blue-800">
+                                            <i class="fas fa-home mr-1"></i> Foundation
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Concrete Pouring</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="transaction-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">06/12/2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">XYZ Electrical</div>
+                                        <div class="text-sm text-gray-500">Invoice #ELEC-9876</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$8,750.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="category-chip bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-bolt mr-1"></i> Electrical
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Main Panel Installation</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="transaction-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">06/10/2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">City Water Dept</div>
+                                        <div class="text-sm text-gray-500">Utility Payment</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$1,250.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="category-chip bg-red-100 text-red-800">
+                                            <i class="fas fa-tint mr-1"></i> Plumbing
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Water Connection</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="transaction-row">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">06/08/2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Topsoil Landscaping</div>
+                                        <div class="text-sm text-gray-500">Invoice #LAND-4567</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$5,800.00</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="category-chip bg-blue-100 text-blue-800">
+                                            <i class="fas fa-tools mr-1"></i> Site Prep
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Grading</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-ellipsis-v"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-500">Showing 1 to 4 of 247 transactions</div>
+                        <div class="flex space-x-1">
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 hover:bg-gray-50">
+                                Previous
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700">
+                                1
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 hover:bg-gray-50">
+                                2
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 hover:bg-gray-50">
+                                3
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 hover:bg-gray-50">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('open');
+        });
+
+        // File upload dropzone functionality
+        const transactionDropzone = document.getElementById('transactionDropzone');
+        const transactionFileInput = document.getElementById('transactionFile');
+        const budgetDropzone = document.getElementById('budgetDropzone');
+        const budgetFileInput = document.getElementById('budgetFile');
+
+        // Transaction dropzone
+        transactionDropzone.addEventListener('click', () => transactionFileInput.click());
+        transactionFileInput.addEventListener('change', handleFileSelect);
+        
+        transactionDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            transactionDropzone.classList.add('active');
+        });
+        
+        transactionDropzone.addEventListener('dragleave', () => {
+            transactionDropzone.classList.remove('active');
+        });
+        
+        transactionDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            transactionDropzone.classList.remove('active');
+            if (e.dataTransfer.files.length) {
+                transactionFileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: transactionFileInput });
+            }
+        });
+
+        // Budget dropzone
+        budgetDropzone.addEventListener('click', () => budgetFileInput.click());
+        budgetFileInput.addEventListener('change', handleFileSelect);
+        
+        budgetDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            budgetDropzone.classList.add('active');
+        });
+        
+        budgetDropzone.addEventListener('dragleave', () => {
+            budgetDropzone.classList.remove('active');
+        });
+        
+        budgetDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            budgetDropzone.classList.remove('active');
+            if (e.dataTransfer.files.length) {
+                budgetFileInput.files = e.dataTransfer.files;
+                handleFileSelect({ target: budgetFileInput });
+            }
+        });
+
+        function handleFileSelect(event) {
+            const fileInput = event.target;
+            const dropzone = fileInput.id === 'transactionFile' ? transactionDropzone : budgetDropzone;
+            const files = fileInput.files;
+            
+            if (files.length) {
+                const file = files[0];
+                const fileName = file.name;
+                const fileSize = (file.size / 1024 / 1024).toFixed(2); // in MB
+                
+                dropzone.innerHTML = `
+                    <div class="flex flex-col items-center justify-center">
+                        <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                        <p class="text-gray-600 font-medium">${fileName}</p>
+                        <p class="text-gray-500 text-sm mt-1">${fileSize} MB</p>
+                    </div>
+                `;
+                
+                // For demo purposes, we'll just show a success message
+                setTimeout(() => {
+                    alert(`${fileInput.id === 'transactionFile' ? 'Transactions' : 'Budget'} file uploaded successfully!`);
+                }, 500);
+            }
+        }
+
+        // Process buttons
+        document.getElementById('processTransactions').addEventListener('click', function() {
+            if (!transactionFileInput.files.length) {
+                alert('Please upload a transactions file first.');
+                return;
+            }
+            // In a real app, this would process the CSV and classify transactions
+            alert('Processing transactions... This would classify transactions in a real application.');
+        });
+
+        document.getElementById('processBudget').addEventListener('click', function() {
+            if (!budgetFileInput.files.length) {
+                alert('Please upload a budget file first.');
+                return;
+            }
+            // In a real app, this would process the budget file
+            alert('Processing budget... This would import budget categories in a real application.');
+        });
+
+        // Budget vs Actual Chart
+        const budgetChartCtx = document.getElementById('budgetChart').getContext('2d');
+        const budgetChart = new Chart(budgetChartCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Site Prep', 'Foundation', 'Framing', 'Electrical', 'Plumbing', 'Finishing'],
+                datasets: [
+                    {
+                        label: 'Budget',
+                        data: [85000, 120000, 180000, 75000, 65000, 350000],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actual',
+                        data: [92500, 115000, 175000, 68000, 72000, 340000],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += '$' + context.raw.toLocaleString();
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
