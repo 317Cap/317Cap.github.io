@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>317 Capital Group</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f5f5f5; color: #222; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; background: #1e1e1e; border-bottom: none; position: sticky; top: 0; z-index: 1000; color: white; }
+    header nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    header nav a {
+      text-decoration: none;
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+    }
+    header nav a:hover { color: #c9a55b; }
+    .hero {
+      padding: 6rem 2rem 5rem 2rem;
+      background: linear-gradient(rgba(30,30,30,0.85), rgba(30,30,30,0.85)), url('sundown.jpg') center/cover no-repeat fixed;
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 500px;
+    }
+    .hero h1 {
+      font-family: Georgia, serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: white;
+      text-shadow: 3px 3px 8px rgba(0,0,0,0.9);
+      margin: 0 0 1rem 0;
+    }
+    .hero p {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.3rem;
+      color: white;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+      max-width: 650px;
+      margin: 0;
+    }
+    .section {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 3rem 2.5rem;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+      border-radius: 8px;
+    }
+    .section h2 {
+      font-family: Georgia, serif;
+      font-size: 2.2rem;
+      margin-bottom: 1.5rem;
+      color: #c9a55b;
+      text-align: center;
+      font-weight: 700;
+    }
+    .services {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      justify-content: center;
+    }
+    .service-card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 2rem 1.5rem;
+      width: 270px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      transition: box-shadow 0.3s, transform 0.2s;
+      text-align: center;
+    }
+    .service-card:hover {
+      box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+      transform: translateY(-6px);
+    }
+    .service-card h3 {
+      margin-bottom: 0.7rem;
+      color: #c9a55b;
+      font-family: Georgia, serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+    .service-card h3 a {
+      color: #c9a55b;
+      text-decoration: none;
+    }
+    .service-card h3 a:hover {
+      text-decoration: underline;
+    }
+    .service-card p {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #444;
+      font-size: 1rem;
+      margin: 0;
+    }
+    footer {
+      background-color: #1e1e1e;
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: white;
+      border-top: none;
+    }
+    footer a {
+      color: #c9a55b;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    input, textarea, button {
+      padding: 0.75rem;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    input, textarea {
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #c9a55b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    button:hover {
+      background-color: #a8853f;
+    }
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #1e1e1e;
+      border-radius: 4px;
+      top: 100%;
+      left: 0;
+      z-index: 1001;
+      min-width: 160px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    .dropdown-content a {
+      display: block;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      color: white;
+      white-space: nowrap;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.9rem;
+    }
+    .dropdown-content a:hover {
+      background-color: #c9a55b;
+      color: #1e1e1e;
+    }
+    .banner {
+      width: 100%;
+      height: 500px;
+      background: none;
+      background-attachment: fixed;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .banner {
+        background-attachment: scroll;
+        background-position: center center;
+      }
+      header nav {
+        gap: 1rem;
+      }
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      .hero p {
+        font-size: 1rem;
+        max-width: 90%;
+      }
+      .services {
+        flex-direction: column;
+        align-items: center;
+      }
+      .service-card {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <header>
+    <div><img src="white-01.png" alt="317 Capital Group logo" style="height: 50px;" /></div>
+    <nav>
+      <a href="#who">Who We Are</a>
+      <div class="dropdown">
+        <a href="#services">Services</a>
+        <div class="dropdown-content">
+          <a href="real-estate.html">Real Estate</a>
+          <a href="debt.html">Debt</a>
+          <a href="equity.html">Equity</a>
+        </div>
+      </div>
+      <a href="contact.html">Contact</a>
+      <a href="https://investors.appfolioim.com/317cap/investor" target="_blank">Investor Portal</a>
+    </nav>
+  </header>
+  <section class="hero">
+    <div class="banner">
+      <h1>317 Capital Group</h1>
+      <p>Boutique Real Estate Debt & Equity solutions specializing in development, bridge loans, and private equity investments</p>
+    </div>
+
+  </section>
+  <section id="who" class="section">
+    <h2>Who We Are</h2>
+    <p>317 Capital Group is a boutique financial firm focused on unlocking value through strategic investments in real estate and private businesses.</p>
+  </section>
+  <section id="services" class="section">
+    <h2>Our Services</h2>
+    <div class="services">
+      <div class="service-card">
+        <h3><a href="real-estate.html">Real Estate</a></h3>
+        <p>In-house and joint venture real estate development projects.</p>
+      </div>
+      <div class="service-card">
+        <h3><a href="debt.html">Debt</a></h3>
+        <p>Providing bridge loans tailored to real estate opportunities.</p>
+      </div>
+      <div class="service-card">
+        <h3><a href="equity.html">Equity</a></h3>
+        <p>Offering select opportunities to invest in private businesses.</p>
+      </div>
+    </div>
+  </section>
+ <!-- <section id="contact" class="section">
+    <h2>Contact Us</h2>
+    <form action="https://formspree.io/f/xpzvlvlq" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required />
+      <input type="email" name="email" placeholder="Your Email" required />
+      <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+    <p>Or email us at <a href="mailto:info@317cap.com">info@317cap.com</a></p>
+  </section>-->
+  <footer>&copy; 2025 317 Capital Group. All rights reserved.</footer>
+</body>
+</html>
